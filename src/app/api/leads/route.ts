@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendLeadNotification } from '@/lib/telegram';
+import { notifyChannel, sendLeadNotification } from '@/lib/telegram';
 import { contactFormSchema } from '@/lib/validations';
 
 export async function POST(req: NextRequest) {
@@ -35,6 +35,19 @@ export async function POST(req: NextRequest) {
       message: validatedData.message,
     });
 
+    if (!telegramResult.success) {
+      console.error('Telegram notification failed, retrying once...');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await sendLeadNotification({
+        name: validatedData.name,
+        phone: validatedData.phone,
+        email: validatedData.email,
+        company: validatedData.company,
+        service: validatedData.service,
+        message: validatedData.message,
+      });
+    }
+
     // Update lead with Telegram status
     if (telegramResult.success && process.env.TELEGRAM_ADMIN_CHAT_ID) {
       await prisma.lead.update({
@@ -45,6 +58,12 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    notifyChannel(
+      `✅ Yangi lead: ${validatedData.name} (${validatedData.service})\nTelefon: ${validatedData.phone}`
+    ).catch((error) => {
+      console.warn('Failed to notify channel:', error);
+    });
 
     // Track analytics
     await prisma.analytics.create({

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { generateBlogPost } from '@/services/aiBlogGenerator';
+import { notifyChannel } from '@/lib/telegram';
 
 /**
  * Placeholder scheduler function.
@@ -45,6 +46,12 @@ export async function runHourlyAIGeneration() {
   });
 
   console.log(`Generated AI post for topic: ${topic}`);
+
+  notifyChannel(
+    `🤖 <b>Yangi AI maqola:</b> ${post.title}\nhttps://innoweb.uz/blog/${post.slug}`
+  ).catch((error) => {
+    console.warn('Failed to notify Telegram channel about AI post:', error);
+  });
 }
 
 async function pickTopic(): Promise<string | null> {
