@@ -1,0 +1,201 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model (Authentication)
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("user")
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Blog Post Model
+model Post {
+  id                String    @id @default(cuid())
+  title             String
+  titleRu           String?
+  slug              String    @unique
+  content           String    @db.Text
+  contentRu         String?   @db.Text
+  excerpt           String?
+  excerptRu         String?
+  imageUrl          String?
+  imagePrompt       String?
+  metaTitle         String?
+  metaTitleRu       String?
+  metaDescription   String?
+  metaDescriptionRu String?
+  tags              String[]
+  category          String
+  status            String    @default("draft")
+  language          String    @default("uz")
+  publishedAt       DateTime?
+  scheduledFor      DateTime?
+  views             Int       @default(0)
+  likes             Int       @default(0)
+  telegramSent      Boolean   @default(false)
+  telegramMsgId     String?
+  aiGenerated       Boolean   @default(false)
+  authorId          String?
+  author            User?     @relation(fields: [authorId], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([scheduledFor])
+  @@index([category])
+}
+
+// Service Model
+model Service {
+  id            String   @id @default(cuid())
+  name          String
+  nameRu        String
+  slug          String   @unique
+  description   String   @db.Text
+  descriptionRu String   @db.Text
+  icon          String
+  features      String[]
+  featuresRu    String[]
+  basePrice     Int
+  priceType     String
+  image         String?
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([slug])
+}
+
+// Portfolio Model
+model Portfolio {
+  id            String   @id @default(cuid())
+  title         String
+  titleRu       String
+  description   String   @db.Text
+  descriptionRu String   @db.Text
+  category      String
+  client        String?
+  image         String
+  images        String[]
+  url           String?
+  tags          String[]
+  technologies  String[]
+  featured      Boolean  @default(false)
+  order         Int      @default(0)
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([category])
+  @@index([featured])
+}
+
+// Lead Model
+model Lead {
+  id             String   @id @default(cuid())
+  name           String
+  email          String?
+  phone          String
+  company        String?
+  service        String
+  message        String?  @db.Text
+  source         String   @default("website")
+  status         String   @default("new")
+  priority       String   @default("medium")
+  assignedTo     String?
+  notes          String?  @db.Text
+  telegramSent   Boolean  @default(false)
+  telegramChatId String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([phone])
+}
+
+// Chat History Model
+model ChatHistory {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String
+  content   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// Analytics Model
+model Analytics {
+  id        String   @id @default(cuid())
+  page      String
+  event     String
+  value     Float?
+  metadata  Json?
+  userAgent String?
+  ip        String?
+  country   String?
+  city      String?
+  createdAt DateTime @default(now())
+  
+  @@index([page])
+  @@index([event])
+  @@index([createdAt])
+}
+
+// Settings Model
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
