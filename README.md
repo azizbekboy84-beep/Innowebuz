@@ -41,6 +41,14 @@ cp .env.example .env
 npm run dev
 ```
 
+### 🌐 Deployment (Render.com)
+
+1. **Repositoryni ulash**: GitHub dagi ushbu projectni Render accountingizga import qiling.
+2. **`render.yaml` fayli**: Render avtomatik `render.yaml` ni o'qib, `innoweb-uz` nomli web servisini yaratadi.
+3. **Environment Variables**: `DATABASE_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `TELEGRAM_CHANNEL_ID`, `OPENAI_API_KEY`, `NEXTAUTH_SECRET` qiymatlarini Render dashboardida qo'shing. `NEXTAUTH_URL` avtomatik `https://innoweb-uz.onrender.com` qilib qo'yilgan bo'lishi mumkin; kerak bo'lsa o'zgartiring.
+4. **Build & Start**: `npm install && npm run build` build command, `npm run start` start command sifatida ishlaydi. Render Node 20 muhitini qo'llab-quvvatlaydi (`package.json` dagi `engines`).
+5. **Cron/Scheduler**: AI post generatorni ishga tushirish uchun Render Cron Jobs xizmatidan foydalanib, `/api/ai/generate` yoki server funksiyasini chaqiring.
+
 ## 📁 Folder Struktura
 
 ```
