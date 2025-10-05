@@ -29,8 +29,14 @@ async function getProject(slug: string) {
   });
 }
 
-export default async function PortfolioDetailPage({ params }: { params: { slug: string } }) {
-  const project = await getProject(params.slug);
+export default async function PortfolioDetailPage({ params }: { params: { slug?: string } }) {
+  const slug = params?.slug;
+
+  if (!slug || slug === 'undefined') {
+    notFound();
+  }
+
+  const project = await getProject(slug);
 
   if (!project) {
     notFound();
